@@ -9,9 +9,6 @@ interface LayoutsProps {
 const origin = (typeof window !== 'undefined') ? window.location.origin : '';
 
 export const Layout = ({ children, title }: LayoutsProps) => {
-    
-    console.log(origin);
-    
 
     return (
         <>

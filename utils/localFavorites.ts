@@ -20,3 +20,9 @@ export const existInFavorites = (id: number) => {
 export const pokemons = () => {
     return JSON.parse(localStorage.getItem('favorites') || '[]');
 }
+
+export const isMobile = () => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 500 ? true : false;
+}
+
