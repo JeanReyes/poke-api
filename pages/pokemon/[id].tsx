@@ -6,6 +6,7 @@ import { Button, Card, Grid, Text, Container, Image } from '@nextui-org/react';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { existInFavorites, onToggleFavorite, pokemonInfo } from '@/utils';
 import confetti from 'canvas-confetti';
+import { viewPort } from '@/hooks';
 
 interface Props {
    pokemon: Pokemon
@@ -14,6 +15,8 @@ interface Props {
 const PokemonPage = ({ pokemon }: Props) => {
     const { name, id } = pokemon;
     const [exist, setExist] = useState(existInFavorites(id));
+    const { isMobile } = viewPort();
+
 
     const onToggle = () => {
         onToggleFavorite(id);  
@@ -52,7 +55,7 @@ const PokemonPage = ({ pokemon }: Props) => {
                 </Grid>
                 <Grid xs={12} sm={8}>
                     <Card>
-                        <Card.Header css={{display:'flex', justifyContent: 'space-between'}}>
+                        <Card.Header css={{display: isMobile ? 'block' : 'flex', justifyContent: 'space-between'}}>
                             <Text h1 transform={'capitalize'}>{pokemon.name}</Text>
                             <Button
                                 color='gradient'
@@ -109,17 +112,30 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
     return {
         paths: pokemon151.map((id) => ({ params: { id } })),
-        fallback: false
+        fallback: 'blocking'
     }
 }
 
 // getStaticPaths pasa como parametro a getStaticProps y puedo hacer llamados a las api correspondiente
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const { id } = params as { id: string };
+
+    const pokemon = await pokemonInfo(id);
+
+    if(!pokemon) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
+
     return {
         props: {
-            pokemon: await pokemonInfo(id)
-        }
+            pokemon
+        },
+        revalidate: 86400 // un dia para que se actualice la información de un contenido estatico ya existente
     }
 }
 

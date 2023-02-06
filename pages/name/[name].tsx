@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layouts';
 import { pokeApi } from '@/api';
 import { Pokemon, PokemonList } from '@/interfaces';
@@ -6,6 +6,7 @@ import { Button, Card, Grid, Text, Container, Image } from '@nextui-org/react';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { existInFavorites, onToggleFavorite, pokemonInfo } from '@/utils';
 import confetti from 'canvas-confetti';
+import { viewPort } from '@/hooks';
 
 interface Props {
    pokemon: Pokemon
@@ -14,6 +15,9 @@ interface Props {
 const PokemonByNamePage = ({ pokemon }: Props) => {
   
     const [exist, setExist] = useState(existInFavorites(pokemon.id));
+    const { isMobile } = viewPort();
+
+
 
     const onToggle = () => {
         onToggleFavorite(pokemon.id);  
@@ -52,7 +56,7 @@ const PokemonByNamePage = ({ pokemon }: Props) => {
                 </Grid>
                 <Grid xs={12} sm={8}>
                     <Card>
-                        <Card.Header css={{display:'flex', justifyContent: 'space-between'}}>
+                        <Card.Header css={{display: isMobile ? 'block' : 'flex', justifyContent: 'space-between'}}>
                             <Text h1 transform={'capitalize'}>{pokemon.name}</Text>
                             <Button
                                 color='gradient'
@@ -61,6 +65,7 @@ const PokemonByNamePage = ({ pokemon }: Props) => {
                             >
                                 {exist ? 'En favoritos' : 'Guardar en favaritos'}
                             </Button>
+                            
                         </Card.Header>
                         <Card.Body>
                             <Text size={30}>Sprites:</Text>
@@ -108,16 +113,28 @@ const PokemonByNamePage = ({ pokemon }: Props) => {
     
     return {
         paths: data.results.map((name) => ({params: { name: name.name }})),
-        fallback: false
+        fallback: 'blocking' // para que pueda aceptar mas solicituides de las que pide.
     }
 }
 
 // getStaticPaths pasa como parametro a getStaticProps y puedo hacer llamados a las api correspondiente
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const { name } = params as { name: string };
+
+    const pokemon = await pokemonInfo(name);
+
+    if(!pokemon) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
+
     return {
         props: {
-            pokemon: await pokemonInfo(name)
+            pokemon
         }
     }
 }

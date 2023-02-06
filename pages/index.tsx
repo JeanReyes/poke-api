@@ -14,7 +14,7 @@ export default function HomePage({pokemons}: Props) {
     return (
         <>
             <Layout
-                title='lista de pokemons'
+                title='lista de pokemones'
             >
                 <Grid.Container gap={ 2 } justify={'flex-start'}>
                     {
